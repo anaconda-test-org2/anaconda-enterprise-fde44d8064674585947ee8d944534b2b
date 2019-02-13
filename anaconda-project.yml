@@ -1,0 +1,21 @@
+name: nlp_api
+description: Natural language toolkit example (requires access to the full Anaconda repository and the internet).
+
+commands:
+  default:
+    unix: python -m nltk.downloader vader_lexicon punkt averaged_perceptron_tagger & python nlp.py
+    supports_http_options: true
+
+channels: []
+packages: []
+
+env_specs:
+  anaconda44_py36:
+    channels: []
+    packages:
+      - python=3.6
+      - flask
+      - nltk
+      - gensim
+      - spacy
+      - ipykernel=4.6

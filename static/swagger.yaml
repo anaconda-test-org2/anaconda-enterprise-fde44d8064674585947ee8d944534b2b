@@ -1,0 +1,289 @@
+swagger: '2.0'
+info:
+  description: >-
+    This API implements some simple natural language processing tasks like
+    tokenization, sentiment analysis, finding the most common words, and
+    retrieving parts of speech from text.
+  version: 2017.06.14
+  title: Natural Language Processing with Anaconda
+  termsOfService: ''
+  contact:
+    email: lreding@continuum.io
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+basePath: /
+tags:
+  - name: tokenize
+    description: Tokenize text.
+  - name: sentiment
+    description: Sentiment analysis of text.
+  - name: parts_of_speech
+    description: Retrieve parts of speech from text.
+  - name: top_k
+    description: Get the k most common words from a collection of text.
+  - name: topics
+    description: Perform Latent Dirichlet Allocation on a collection on text.
+schemes:
+  - https
+paths:
+  /tokenize:
+    post:
+      tags:
+        - tokenize
+      summary: Get tokens from text.
+      description: ''
+      consumes:
+        - application/json
+        - text/plain
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Text to be tokenized.
+          required: true
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+        - name: unique
+          in: query
+          description: Only return unique tokens?
+          required: false
+          type: string
+        - name: library
+          in: query
+          description: >-
+            Which library to use for tokenization? Options are textblob, gensim,
+            nltk, or spacy
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              library:
+                type: string
+                description: The library used for tokenization.
+                example: textblob
+              tokens:
+                type: array
+                description: The array of tokens in the text.
+                example:
+                  - anaconda
+                  - is
+                  - awesome
+        '405':
+          description: Invalid data type
+  /sentiment:
+    post:
+      tags:
+        - sentiment
+      summary: Get the sentiment score from input text.
+      description: ''
+      consumes:
+        - application/json
+        - text/plain
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Text to be analyzed.
+          required: true
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+        - name: type
+          in: query
+          description: >-
+            The type of sentiment analyzer to use. Type = 1 (the default) uses
+            the implmentation from the pattern library. Type = 2 uses a Naive
+            Bayes classifier trained on movie reviews from nltk.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              classifier_type:
+                type: integer
+                example: 1
+                description: Classifier type used in the sentiment analysis.
+              sentiment_score:
+                type: string
+                example: -0.6
+                description: >-
+                  If type = 1, returns the sentiment score. Ranges from -1 (very
+                  negative) to 1 (very positive). If type = 2, returns whether
+                  the text is predicted to be positive or negative, the
+                  probability that the text is positive, and the probability
+                  that the text is negative.
+        '405':
+          description: Invalid data type
+  /top_k:
+    post:
+      tags:
+        - top_k
+      summary: Get the top k most common tokens from a collection of texts.
+      description: ''
+      consumes:
+        - application/json
+        - text/plain
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Text to be analyzed.
+          required: true
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+        - in: query
+          name: library
+          description: >-
+            Library to use for tokenization. Options are textblob (the default),
+            nltk, gensim, and spacy.
+          required: false
+          type: string
+        - in: query
+          name: k
+          type: integer
+          description: Find the top k most common tokens in all the text passed.
+          required: false
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              k:
+                type: integer
+                description: Returning the top k most common words.
+                example: 1
+              library:
+                type: string
+                description: The library used for tokenization.
+                example: nltk
+              top_k:
+                type: array
+                description: >-
+                  List of the most popular words in the collection of strings
+                  passed, in the format ["token", count].
+                example:
+                  - anaconda
+                  - 5
+        '405':
+          description: Invalid data type
+  /parts_of_speech:
+    post:
+      tags:
+        - parts_of_speech
+      summary: Gets the parts of speech from text.
+      description: ''
+      consumes:
+        - application/json
+        - text/plain
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Text to be analyzed.
+          required: true
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              nouns:
+                type: array
+                description: List of nouns.
+                example:
+                  - brown
+                  - fox
+                  - dog
+              adverbs:
+                type: array
+                description: List of adverbs.
+                example: []
+              verbs:
+                type: array
+                description: List of verbs.
+                example:
+                  - jumped
+              number:
+                type: array
+                description: 'List of any numbers (e.g. three, 11) in the text.'
+                example: []
+              adjectives:
+                type: array
+                description: List of adjectives.
+                example:
+                  - quick
+                  - lazy
+        '405':
+          description: Invalid data type
+  /topics:
+    post:
+      tags:
+        - topics
+      summary: Perform Latent Dirichlet Allocation on a collection of text.
+      description: ''
+      consumes:
+        - application/json
+        - text/plain
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Text to be analyzed.
+          required: true
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+        - in: query
+          name: num_topics
+          description: Number of topics to return.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              number_of_topics:
+                type: integer
+                description: The number of topics the LDA analysis returns.
+                example: 5
+              topics:
+                type: array
+                description: List of topics output by the analysis.
+        '405':
+          description: Invalid data type
+securityDefinitions:
+  APIKey:
+    type: apiKey
+    in: header
+    name: TOKEN
